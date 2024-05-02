@@ -2,7 +2,8 @@ const sendEmail = require("../middleware/nodemailer");
 const { isStrongPassword } = require("validator");
 const userModel = require("../model/user");
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs')
 require('dotenv').config();
 
 const generateRandom = () => {
@@ -41,8 +42,8 @@ const registerAccount = async(req, res)=>{
 		if (!isStrongPassword(password, passwordSecurityOptions)) {
 			throw new Error('Please input a stronger password\n at least 6 digits');
 		} else if (password) {
-			const salt = await bcrypt.genSalt(10);
-			const hash = await bcrypt.hash(password, salt);
+			const salt = await bcrypt.genSaltSync(10);
+			const hash = await bcrypt.hashSync(password, salt);
 			req.body.password = hash;
 		}
 
