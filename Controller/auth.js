@@ -1,15 +1,13 @@
+const sendEmail = require("../middleware/nodemailer");
 const { isStrongPassword } = require("validator");
 const userModel = require("../model/user");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 require('dotenv').config();
 
-
-
 const generateRandom = () => {
 	return Math.random().toString() + 'djyk';
 };
-
 
 const registerAccount = async(req, res)=>{
     try {
@@ -56,6 +54,7 @@ const registerAccount = async(req, res)=>{
 			password: req.body.password,
 			first_name,
 			last_name,
+			isVerified: false,
 		});
 
 		const id = user._id.toString();
@@ -95,7 +94,7 @@ const registerAccount = async(req, res)=>{
 					<p>
 						Kindly click on the button below to verify your email address
 						<br />
-						<a href=${`${process.env.BASE_URL}/auth/verify/${id}/${token}`}
+						<a href=${`${process.env.localhost_url}/auth/verify/${id}/${token}`}
 							>Click button to verify your account</a
 						>
 						<br />
@@ -109,8 +108,8 @@ const registerAccount = async(req, res)=>{
 			</html>
 		`;
 
-		await sendContactEmail(
-			process.env.ADMIN_EMAIL,
+		await sendEmail(
+			process.env.admin_email,
 			'TuluWallet',
 			email,
 			message,
@@ -184,7 +183,7 @@ const verifyAccount = async (req, res) => {
 		if (!user)
 			return res.status(400).send({success: false, error: 'Invalid link'});
 
-		await User.updateOne({_id: user._id}, {isVerified: true, token: null});
+		await userModel.updateOne({_id: user._id}, {isVerified: true, token: null});
 
 		res.status(200).json({
 			success: true,
@@ -196,9 +195,75 @@ const verifyAccount = async (req, res) => {
 		res.status(500).json({error: 'Server Error'});
 	}
 };
+const forgetPassword = async (req, res) =>{
+    const {email} = req.body;
+    try{
+        const user = await userModel.findOne({email});
+        if(!user) {
+            return res.status(404).json({error: "User not found"})
+        }
+        const token = generateRandom();
+        user.resetToken = token;
+        user.resetExpires = Date.now() + 3600000;
+
+        await user.save();
+
+        const resetLink = `Dear ${user?.first_name}, Click the link to reset your password: ${process.env.localhost_url}/user/update/${token}`;
+        console.log("reset link", resetLink);
+
+        await sendEmail(
+            process.env.admin_email,
+            email,
+            resetLink,
+            "Password Reset Link From Tulu Wallet"
+        )
+        return res.status(200).json({message: " Mail sent successfully"})
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({error: "Server error"})
+    }
+}
+
+const updatePassword = async (req, res) =>{
+    try{
+        const { password, confirmPassword} = req.body;
+        if(!password || !confirmPassword){
+            return res.status(400).json({error: "Password and Confirm Password are required"})
+        }
+        if(password !== confirmPassword){
+            return res.status(400).json({error: "Password do not match"})
+        }
+        const user = await userModel.findOne({
+            resetToken: req.params.token,
+            resetExpires: {$gte: Date.now()},
+        });
+        if (!user){
+            return res.status(400).json({error: "Password reset token is invalid or has expired"})
+        }
+
+        user.password = password;
+		const salt = await bcrypt.genSalt(10);
+		const hash = await bcrypt.hash(password, salt);
+		user.password = hash;
+
+        user.resetToken = undefined;
+        user.resetExpires = undefined;
+
+        await user.save();
+
+        return res.status(200).json({ msg: 'Password successfully reset' });
+
+    } catch (error){
+        console.log(error)
+        res.status(500).json({error: "Server error"})
+    }
+}
 
 module.exports = {
     registerAccount,
     loginAccount,
-	verifyAccount
+	verifyAccount,
+    forgetPassword,
+    updatePassword
 }
