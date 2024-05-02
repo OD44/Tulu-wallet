@@ -115,6 +115,16 @@ const loginAccount = async (req, res) => {
 	}
 };
 
+const Logout = async(req, res)=>{
+    req.logout(function(err){
+        if(err){
+            return res.json(err)
+        }
+        res.json({message: "Logout successful"})
+    })
+}
+
+
 const forgetPassword = async (req, res) =>{
     const {email} = req.body;
     try{
@@ -128,7 +138,7 @@ const forgetPassword = async (req, res) =>{
 
         await user.save();
 
-        const resetLink = `Dear ${user?.first_name}, Click the link to reset your password: ${process.env.localhost_url}/update/${token}`;
+        const resetLink = `Dear ${user?.first_name}, Click the link to reset your password: ${process.env.localhost_url}/user/update/${token}`;
         console.log("reset link", resetLink);
 
         await sendEmail(
@@ -183,6 +193,7 @@ const updatePassword = async (req, res) =>{
 module.exports = {
     registerAccount,
     loginAccount,
+    Logout,
     forgetPassword,
     updatePassword
 }
