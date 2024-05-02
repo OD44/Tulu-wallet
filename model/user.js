@@ -25,6 +25,10 @@ const userSchema = new Schema(
 			required: [true, 'Please input a password'],
 			minlength: [6, 'Your password must be at least 6 characters'],
 		},
+        isVerified: {
+			type: Boolean,
+			required: [true, 'Please provide verification status'],
+		},
 		token: String,
 		resetToken: String,
 		resetExpires: Date,
