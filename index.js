@@ -12,8 +12,6 @@ const port = process.env.port || 6000;
 app.use(cors());
 app.use(express.json());
 
-app.use('/', route)
-app.use('/', authRouter);
 
 app.listen(port, () => {
 	db();
