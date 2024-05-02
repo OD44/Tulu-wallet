@@ -27,6 +27,6 @@ app.all('*', (req, res) => {
 	res
 		.status(404)
 		.json(
-			`${req.method} - route '${req.originalUrl}' isn't available on Cero api`
+			`${req.method} - route '${req.originalUrl}' isn't available on tulu api`
 		);
 });
