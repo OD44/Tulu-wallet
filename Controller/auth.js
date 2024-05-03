@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs')
 require('dotenv').config();
 
 const generateRandom = () => {
-	return Math.random().toString() + 'djyk';
+	return Math.random().toString() + 'hgjk';
 };
 
 const registerAccount = async(req, res)=>{
