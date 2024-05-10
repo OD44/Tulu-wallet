@@ -271,11 +271,66 @@ const updatePassword = async (req, res) =>{
     }
 }
 
+const getAllUser = async (req, res) =>{
+	try{
+		const getUser = await userModel.find()
+		res.json(getUser)
+
+	} catch(error){
+		console.error(error)
+		return res.status(500).json({error: "Server error"})
+	}
+}
+
+const getSingleUser = async(req, res)=>{
+	try{
+		// const userId = req.params._id;
+		const user = await userModel.findById(req.params.id)
+		if(!user){
+			return res.status(404).json({error: "User not found"})
+		}
+		res.json(user);
+	} catch (error){
+		console.error(error)
+		return res.status(500).json({error: "Server error"})
+	}
+}
+
+const UpdateUser = async (req, res) =>{
+	try{
+		const userId = req.params['id'];
+		const {email, password, full_name} = req.body;
+		const updatedUser = await userModel.findOneAndUpdate({_id:userId}, req.body,
+			{new:true, runValidators:true});
+		if(!updatedUser){
+			return res.status(404).json({error: "User not found"})
+		}
+		res.json(updatedUser)
+	} catch (error){
+		console.error(error)
+		return res.status(500).json({error: "Server error"})
+	}
+}
+
+const deleteUser = async (req, res) =>{
+	const _id = req.params['id'];
+	const sameId = await userModel.findById({_id});
+	if(sameId){
+		await userModel.findOneAndDelete({_id});
+		return res.json({msg: "User deleted successfully"})
+	}
+	res.json({error: "No User found"})
+}
+
 module.exports = {
     registerAccount,
     loginAccount,
     Logout,
 	verifyAccount,
     forgetPassword,
-    updatePassword
+    updatePassword,
+	getSingleUser,
+	getAllUser,
+	UpdateUser,
+	deleteUser
 }
