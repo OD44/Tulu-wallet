@@ -175,16 +175,6 @@ const loginAccount = async (req, res) => {
 	}
 };
 
-const Logout = async(req, res)=>{
-    req.logout(function(err){
-        if(err){
-            return res.json(err)
-        }
-        res.json({message: "Logout successful"})
-    })
-}
-
-
 const verifyAccount = async (req, res) => {
 	try {
 		const user = await userModel.findOne({
@@ -296,7 +286,7 @@ const getSingleUser = async(req, res)=>{
 	}
 }
 
-const UpdateUser = async (req, res) =>{
+const updateUser = async (req, res) =>{
 	try{
 		const userId = req.params['id'];
 		const {email, password, full_name} = req.body;
@@ -325,12 +315,11 @@ const deleteUser = async (req, res) =>{
 module.exports = {
     registerAccount,
     loginAccount,
-    Logout,
 	verifyAccount,
     forgetPassword,
     updatePassword,
 	getSingleUser,
 	getAllUser,
-	UpdateUser,
+	updateUser,
 	deleteUser
 }
